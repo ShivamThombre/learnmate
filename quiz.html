@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>English Quiz Certificate</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
+
+  <div class="w-full max-w-2xl bg-white rounded-xl shadow-lg p-6">
+    <h1 class="text-3xl font-bold mb-4 text-center text-blue-700">English Quiz</h1>
+
+    <!-- Name Input -->
+    <div id="nameBox" class="text-center mb-6">
+      <input id="username" type="text" placeholder="Enter your name" class="border p-2 rounded w-2/3 mb-4">
+      <br>
+      <button onclick="startQuiz()" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Start</button>
+    </div>
+
+    <!-- Difficulty Buttons -->
+    <div id="levelSelect" class="flex justify-center space-x-4 mb-6 hidden">
+      <button onclick="loadQuiz('easy')" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Easy</button>
+      <button onclick="loadQuiz('medium')" class="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600">Medium</button>
+      <button onclick="loadQuiz('hard')" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Hard</button>
+    </div>
+
+    <!-- Quiz Area -->
+    <div id="quizBox" class="space-y-4 mb-6"></div>
+
+    <!-- Submit Button -->
+    <div id="submitBtn" class="text-center hidden">
+      <button onclick="submitQuiz()" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Submit</button>
+    </div>
+
+    <!-- Certificate -->
+    <div id="certificate" class="hidden mt-6 border-2 border-dashed border-gray-400 p-6 text-center bg-white rounded-xl shadow-md" style="font-family: Georgia, serif;">
+      <h2 class="text-2xl font-bold text-green-700 mb-2">🎉 Congratulations! 🎉</h2>
+      <p class="text-lg text-gray-800 mb-1">This certificate is awarded to</p>
+      <p class="text-2xl font-bold text-blue-800 mb-2" id="studentName"></p>
+      <p class="text-gray-800 text-lg mb-2">For completing the <span id="levelLabel" class="font-semibold"></span> level quiz</p>
+      <p class="text-xl font-bold text-blue-800 mb-4">Score: <span id="scoreText"></span></p>
+      <p class="text-sm text-gray-600">Keep learning and improving your English every day!</p>
+
+      <!-- Download Button -->
+      <button onclick="downloadImage()" class="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+        Download Certificate 🖼️
+      </button>
+
+     
+  
+    </div>
+  </div>
+
+  <script>
+    const quizzes = {
+      easy: [
+        { q: "What is the plural of 'cat'?", options: ["catz", "cats", "cates", "caties"], answer: "cats" },
+        { q: "Choose the correct article: ___ apple.", options: ["A", "An", "The", "No article"], answer: "An" }
+      ],
+      medium: [
+        { q: "What is the past tense of 'go'?", options: ["goed", "gone", "went", "going"], answer: "went" },
+        { q: "Identify the noun: 'She sings beautifully.'", options: ["sings", "beautifully", "She", "None"], answer: "She" }
+      ],
+      hard: [
+        { q: "Which is a complex sentence?", options: ["I ran.", "She smiled and left.", "Because he was late, he missed the train.", "Go now!"], answer: "Because he was late, he missed the train." },
+        { q: "Choose the correct sentence.", options: ["He don't know.", "He doesn't knows.", "He doesn't know.", "He do not knows."], answer: "He doesn't know." }
+      ]
+    };
+
+    let currentQuiz = [];
+    let currentLevel = "";
+    let userName = "";
+
+    function startQuiz() {
+      const input = document.getElementById("username").value.trim();
+      if (!input) {
+        alert("Please enter your name to continue.");
+        return;
+      }
+      userName = input;
+      document.getElementById("nameBox").style.display = "none";
+      document.getElementById("levelSelect").classList.remove("hidden");
+    }
+
+    function loadQuiz(level) {
+      currentLevel = level;
+      currentQuiz = quizzes[level];
+
+      // Hide level buttons
+      document.getElementById("levelSelect").style.display = "none";
+
+      // Show Submit button
+      document.getElementById("submitBtn").classList.remove("hidden");
+
+      // Build quiz
+      document.getElementById("quizBox").innerHTML = currentQuiz.map((q, index) => `
+        <div>
+          <p class="font-medium">${index + 1}. ${q.q}</p>
+          ${q.options.map(opt => `
+            <label class="block">
+              <input type="radio" name="q${index}" value="${opt}" class="mr-2"> ${opt}
+            </label>
+          `).join('')}
+        </div>
+      `).join('');
+    }
+
+    function submitQuiz() {
+      let score = 0;
+      currentQuiz.forEach((q, i) => {
+        const selected = document.querySelector(`input[name="q${i}"]:checked`);
+        if (selected && selected.value === q.answer) {
+          score++;
+        }
+      });
+
+      document.getElementById("scoreText").innerText = `${score} / ${currentQuiz.length}`;
+      document.getElementById("levelLabel").innerText = currentLevel.toUpperCase();
+      document.getElementById("studentName").innerText = userName;
+      document.getElementById("certificate").classList.remove("hidden");
+
+      document.getElementById("quizBox").style.display = "none";
+      document.getElementById("submitBtn").style.display = "none";
+    }
+
+    function downloadImage() {
+      const scoreElement = document.getElementById("certificate");
+      html2canvas(scoreElement).then(canvas => {
+        const link = document.createElement("a");
+        link.download = `${userName}_English_Quiz_Certificate.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      });
+    }
+
+
+    function goHome() {
+  // Reset everything
+  document.getElementById("nameBox").style.display = "block";
+  document.getElementById("username").value = "";
+  document.getElementById("levelSelect").classList.add("hidden");
+  document.getElementById("quizBox").style.display = "block";
+  document.getElementById("quizBox").innerHTML = "";
+  document.getElementById("submitBtn").classList.add("hidden");
+  document.getElementById("certificate").classList.add("hidden");
+}
+
+  </script>
+
+</body>
+</html>
