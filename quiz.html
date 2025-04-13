@@ -18,6 +18,9 @@
       <button onclick="startQuiz()" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Start</button>
     </div>
 
+    <!-- Timer -->
+    <div id="timer" class="text-right text-sm text-gray-600 hidden">Time left: <span id="timeLeft">600</span>s</div>
+
     <!-- Difficulty Buttons -->
     <div id="levelSelect" class="flex justify-center space-x-4 mb-6 hidden">
       <button onclick="loadQuiz('easy')" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Easy</button>
@@ -25,128 +28,170 @@
       <button onclick="loadQuiz('hard')" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Hard</button>
     </div>
 
-    <!-- Quiz Area -->
-    <div id="quizBox" class="space-y-4 mb-6"></div>
-
-    <!-- Submit Button -->
-    <div id="submitBtn" class="text-center hidden">
-      <button onclick="submitQuiz()" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Submit</button>
+    <!-- Quiz Container -->
+    <div id="quizContainer" class="hidden">
+      <div id="questionBox" class="mb-4 text-lg font-medium"></div>
+      <div id="optionsBox" class="space-y-2"></div>
+      <button onclick="nextQuestion()" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded">Next</button>
     </div>
 
-    <!-- Certificate -->
-    <div id="certificate" class="hidden mt-6 border-2 border-dashed border-gray-400 p-6 text-center bg-white rounded-xl shadow-md" style="font-family: Georgia, serif;">
-      <h2 class="text-2xl font-bold text-green-700 mb-2">🎉 Congratulations! 🎉</h2>
-      <p class="text-lg text-gray-800 mb-1">This certificate is awarded to</p>
-      <p class="text-2xl font-bold text-blue-800 mb-2" id="studentName"></p>
-      <p class="text-gray-800 text-lg mb-2">For completing the <span id="levelLabel" class="font-semibold"></span> level quiz</p>
-      <p class="text-xl font-bold text-blue-800 mb-4">Score: <span id="scoreText"></span></p>
-      <p class="text-sm text-gray-600">Keep learning and improving your English every day!</p>
-
-      <!-- Download Button -->
-      <button onclick="downloadImage()" class="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-        Download Certificate 🖼️
-      </button>
-
-     
-  
+    <!-- Result -->
+    <div id="resultBox" class="hidden text-center">
+      <h2 class="text-2xl font-bold mb-2">Quiz Completed!</h2>
+      <p id="scoreText" class="text-lg mb-4"></p>
+      <div id="certificate" class="border border-yellow-500 border-4 p-6 rounded bg-white inline-block shadow-xl text-center">
+        <h3 class="text-2xl font-bold mb-4 text-purple-700">Certificate of Achievement</h3>
+        <p class="mb-2 text-gray-800">This is to certify that</p>
+        <p id="certName" class="text-xl font-semibold text-blue-800"></p>
+        <p class="mb-2 text-gray-800">has successfully completed the quiz with a score of</p>
+        <p id="certScore" class="text-xl font-semibold text-green-700"></p>
+        <p class="mt-4 text-sm text-gray-600">Date: <span id="certDate"></span></p>
+        <button onclick="downloadCertificate()" class="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Download Certificate</button>
+      </div>
     </div>
   </div>
 
   <script>
     const quizzes = {
       easy: [
-        { q: "What is the plural of 'cat'?", options: ["catz", "cats", "cates", "caties"], answer: "cats" },
-        { q: "Choose the correct article: ___ apple.", options: ["A", "An", "The", "No article"], answer: "An" }
+        { type: 'mcq', question: "What is the synonym of 'Happy'?", options: ["Sad", "Joyful", "Angry", "Tired"], answer: "Joyful" },
+        { type: 'fill', question: "She ___ to school every day.", answer: "goes" },
+        { type: 'mcq', question: "Choose the correct article: ___ apple a day keeps the doctor away.", options: ["A", "An", "The", "None"], answer: "An" },
+        { type: 'fill', question: "I ___ a book now.", answer: "am reading" },
+        { type: 'mcq', question: "What is the opposite of 'Fast'?", options: ["Slow", "Quick", "Rapid", "Swift"], answer: "Slow" },
+        { type: 'fill', question: "The cat ___ on the mat.", answer: "sits" }
       ],
       medium: [
-        { q: "What is the past tense of 'go'?", options: ["goed", "gone", "went", "going"], answer: "went" },
-        { q: "Identify the noun: 'She sings beautifully.'", options: ["sings", "beautifully", "She", "None"], answer: "She" }
+        { type: 'mcq', question: "What is the antonym of 'Ancient'?", options: ["Old", "Modern", "Historic", "Rare"], answer: "Modern" },
+        { type: 'fill', question: "The sun ___ in the east.", answer: "rises" },
+        { type: 'mcq', question: "Find the correct form: She has ___ her work.", options: ["do", "did", "done", "does"], answer: "done" },
+        { type: 'fill', question: "He ___ to play the guitar well.", answer: "knows" },
+        { type: 'mcq', question: "Which is the correct comparative form of 'good'?", options: ["Gooder", "Better", "Goodest", "Best"], answer: "Better" },
+        { type: 'fill', question: "We ___ going to the park later.", answer: "are" }
       ],
       hard: [
-        { q: "Which is a complex sentence?", options: ["I ran.", "She smiled and left.", "Because he was late, he missed the train.", "Go now!"], answer: "Because he was late, he missed the train." },
-        { q: "Choose the correct sentence.", options: ["He don't know.", "He doesn't knows.", "He doesn't know.", "He do not knows."], answer: "He doesn't know." }
+        { type: 'mcq', question: "Identify the figure of speech: 'The wind whispered through the trees.'", options: ["Simile", "Metaphor", "Personification", "Alliteration"], answer: "Personification" },
+        { type: 'fill', question: "Despite the rain, they ___ to play.", answer: "continued" },
+        { type: 'mcq', question: "Select the correct word: He is very good ___ mathematics.", options: ["on", "at", "in", "with"], answer: "at" },
+        { type: 'fill', question: "Neither of the answers ___ correct.", answer: "is" },
+        { type: 'mcq', question: "Which of the following is a complex sentence?", options: ["I like ice cream.", "She sings and dances.", "I went to the store because I needed milk.", "The sky is blue."], answer: "I went to the store because I needed milk." },
+        { type: 'fill', question: "The teacher asked if anyone ___ any questions.", answer: "had" }
       ]
     };
 
     let currentQuiz = [];
-    let currentLevel = "";
+    let currentQuestion = 0;
+    let score = 0;
     let userName = "";
+    let timer;
+    let timeLeft = 600;
 
     function startQuiz() {
-      const input = document.getElementById("username").value.trim();
-      if (!input) {
-        alert("Please enter your name to continue.");
+      userName = document.getElementById("username").value.trim();
+      if (userName === "") {
+        alert("Please enter your name to start the quiz.");
         return;
       }
-      userName = input;
-      document.getElementById("nameBox").style.display = "none";
+      document.getElementById("nameBox").classList.add("hidden");
       document.getElementById("levelSelect").classList.remove("hidden");
     }
 
     function loadQuiz(level) {
-      currentLevel = level;
       currentQuiz = quizzes[level];
-
-      // Hide level buttons
-      document.getElementById("levelSelect").style.display = "none";
-
-      // Show Submit button
-      document.getElementById("submitBtn").classList.remove("hidden");
-
-      // Build quiz
-      document.getElementById("quizBox").innerHTML = currentQuiz.map((q, index) => `
-        <div>
-          <p class="font-medium">${index + 1}. ${q.q}</p>
-          ${q.options.map(opt => `
-            <label class="block">
-              <input type="radio" name="q${index}" value="${opt}" class="mr-2"> ${opt}
-            </label>
-          `).join('')}
-        </div>
-      `).join('');
+      currentQuestion = 0;
+      score = 0;
+      timeLeft = 600; // 10 minutes in seconds
+      document.getElementById("levelSelect").classList.add("hidden");
+      document.getElementById("quizContainer").classList.remove("hidden");
+      document.getElementById("timer").classList.remove("hidden");
+      startTimer();
+      showQuestion();
     }
 
-    function submitQuiz() {
-      let score = 0;
-      currentQuiz.forEach((q, i) => {
-        const selected = document.querySelector(`input[name="q${i}"]:checked`);
-        if (selected && selected.value === q.answer) {
-          score++;
+    function startTimer() {
+      clearInterval(timer);
+      timer = setInterval(() => {
+        timeLeft--;
+        document.getElementById("timeLeft").innerText = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          finishQuiz();
         }
-      });
-
-      document.getElementById("scoreText").innerText = `${score} / ${currentQuiz.length}`;
-      document.getElementById("levelLabel").innerText = currentLevel.toUpperCase();
-      document.getElementById("studentName").innerText = userName;
-      document.getElementById("certificate").classList.remove("hidden");
-
-      document.getElementById("quizBox").style.display = "none";
-      document.getElementById("submitBtn").style.display = "none";
+      }, 1000);
     }
 
-    function downloadImage() {
-      const scoreElement = document.getElementById("certificate");
-      html2canvas(scoreElement).then(canvas => {
+    function showQuestion() {
+      const question = currentQuiz[currentQuestion];
+      document.getElementById("questionBox").innerText = question.question;
+      const optionsBox = document.getElementById("optionsBox");
+      optionsBox.innerHTML = "";
+
+      if (question.type === "mcq") {
+        question.options.forEach(option => {
+          const btn = document.createElement("button");
+          btn.textContent = option;
+          btn.className = "block w-full bg-gray-200 p-2 rounded hover:bg-gray-300";
+          btn.onclick = () => selectAnswer(option);
+          optionsBox.appendChild(btn);
+        });
+      } else if (question.type === "fill") {
+        const input = document.createElement("input");
+        input.type = "text";
+        input.className = "border p-2 rounded w-full";
+        input.id = "fillAnswer";
+        optionsBox.appendChild(input);
+      }
+    }
+
+    function selectAnswer(option) {
+      const question = currentQuiz[currentQuestion];
+      if (option === question.answer) score++;
+      nextQuestion();
+    }
+
+    function nextQuestion() {
+      const question = currentQuiz[currentQuestion];
+      if (question.type === "fill") {
+        const userAnswer = document.getElementById("fillAnswer").value.trim();
+        if (userAnswer.toLowerCase() === question.answer.toLowerCase()) score++;
+      }
+      currentQuestion++;
+      if (currentQuestion < currentQuiz.length) {
+        showQuestion();
+      } else {
+        clearInterval(timer);
+        finishQuiz();
+      }
+    }
+
+    function finishQuiz() {
+      document.getElementById("quizContainer").classList.add("hidden");
+      document.getElementById("resultBox").classList.remove("hidden");
+      document.getElementById("scoreText").innerText = `You scored ${score} out of ${currentQuiz.length}`;
+      document.getElementById("certName").innerText = userName;
+      document.getElementById("certScore").innerText = `${score} / ${currentQuiz.length}`;
+      document.getElementById("certDate").innerText = new Date().toLocaleDateString();
+    }
+
+    function downloadCertificate() {
+      html2canvas(document.getElementById("certificate")).then(canvas => {
         const link = document.createElement("a");
-        link.download = `${userName}_English_Quiz_Certificate.png`;
-        link.href = canvas.toDataURL("image/png");
+        link.download = `${userName}_certificate.png`;
+        link.href = canvas.toDataURL();
         link.click();
       });
     }
 
-
-    function goHome() {
-  // Reset everything
-  document.getElementById("nameBox").style.display = "block";
-  document.getElementById("username").value = "";
-  document.getElementById("levelSelect").classList.add("hidden");
-  document.getElementById("quizBox").style.display = "block";
-  document.getElementById("quizBox").innerHTML = "";
-  document.getElementById("submitBtn").classList.add("hidden");
-  document.getElementById("certificate").classList.add("hidden");
-}
-
+    window.addEventListener("DOMContentLoaded", () => {
+      const usernameInput = document.getElementById("username");
+      if (usernameInput) {
+        usernameInput.addEventListener("keyup", function(event) {
+          if (event.key === "Enter") {
+            startQuiz();
+          }
+        });
+      }
+    });
   </script>
-
 </body>
 </html>
